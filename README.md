@@ -1,129 +1,101 @@
-# ₿ Bitcoin y Criptomonedas — Análisis para Mercado LATAM
+# Bitcoin y criptomonedas — métricas de riesgo para LATAM
 
-![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=flat&logo=python&logoColor=white)
-![yfinance](https://img.shields.io/badge/yfinance-0.2-purple?style=flat)
-![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?style=flat&logo=jupyter&logoColor=white)
-![Bitcoin](https://img.shields.io/badge/Bitcoin-F7931A?style=flat&logo=bitcoin&logoColor=white)
-![Status](https://img.shields.io/badge/Estado-Activo-brightgreen)
+> Módulo de Python y notebook para medir volatilidad, drawdown, Sharpe/Sortino y correlación de BTC, ETH, BNB, ILF y GLD, desde la perspectiva de un inversor latinoamericano. Para analistas y estudiantes de finanzas.
 
-Análisis cuantitativo del comportamiento de Bitcoin y criptomonedas principales desde la perspectiva de un inversor latinoamericano. Incluye análisis de volatilidad, drawdown, correlación dinámica con activos LATAM y comparación como cobertura frente a la inflación boliviana.
+**Estado (2026-11-17):** PARCIAL — `cripto_metrics.py` es un módulo y CLI funcional en su código; el notebook no tiene outputs guardados; no hay datos de BOB ni de inflación boliviana en el repo, así que la comparación BTC frente a inflación no se puede reproducir; el bloque de salida de ejemplo del README anterior se retira; falta `requirements.txt` y licencia.
+**Repo:** kapitalya/bitcoin-latam-analisis · **Rama por defecto:** main · **Alias/nombres anteriores:** ninguno
 
----
+> Aviso: análisis educativo, no es consejo financiero. Bitcoin es un activo muy volátil; los drawdowns históricos superiores al 70% no garantizan nada hacia adelante.
 
-## 🎯 Contexto Bolivia
+## Qué hace
 
-Con el dólar paralelo boliviano en alza desde 2022 y restricciones cambiarias formales, Bitcoin ha ganado relevancia como alternativa de ahorro e inversión. Este análisis cuantifica tres preguntas clave:
+- `cripto_metrics.py` (raíz): descarga precios con `yfinance` (`descargar_precios`) y calcula retornos logarítmicos (`retornos_log`), drawdown (`calcular_drawdown`), Sharpe y Sortino con tasa libre de riesgo configurable (`metricas_resumen`), correlación rolling (`correlacion_rolling`) y ciclos bull/bear sobre el precio de BTC (`ciclos_mercado`, umbrales por defecto de 20%). Como script, imprime el resumen y guarda `datos/metricas_cripto.csv`.
+- `bitcoin_latam.ipynb`: exploración y visualizaciones con `TICKERS` = BTC-USD, ETH-USD, BNB-USD, ILF y GLD. Sin outputs guardados.
 
-1. ¿Cuánto más volátil es BTC vs activos tradicionales?
-2. ¿Está correlacionado con los mercados LATAM o diversifica?
-3. ¿Protege contra la inflación boliviana mejor que mantener bolivianos?
+## Stack
 
----
+Python. Librerías importadas: `numpy`, `pandas`, `scipy` (`stats`), `yfinance` (script y notebook), `matplotlib` y `seaborn` (notebook). Jupyter Notebook.
 
-## 📐 Técnicas Aplicadas
-
-| Técnica | Descripción |
-|---|---|
-| **Retornos logarítmicos** | Base para todas las métricas estadísticas |
-| **Volatilidad rolling 30d** | Volatilidad cambiante en el tiempo (precursor de GARCH) |
-| **Drawdown analysis** | Caída máxima desde pico: el peor escenario realista |
-| **Correlación rolling 60d** | ¿La correlación con LATAM cambia en crisis? |
-| **Sharpe & Sortino Ratio** | Retorno ajustado por riesgo total y riesgo a la baja |
-| **Ciclos bull/bear** | Identificación de fases de mercado por retorno 60d |
-| **Cobertura vs inflación BO** | Comparación poder adquisitivo BTC vs BOB |
-
----
-
-## 📊 Activos Analizados
-
-| Ticker | Instrumento | Por qué incluirlo |
-|---|---|---|
-| `BTC-USD` | Bitcoin | Activo principal del análisis |
-| `ETH-USD` | Ethereum | Segunda cripto por capitalización |
-| `BNB-USD` | Binance Coin | Referencia exchange LATAM más usado |
-| `ILF` | iShares Latin America 40 | Benchmark mercado LATAM |
-| `GLD` | SPDR Gold ETF | Activo refugio clásico — benchmark de cobertura |
-
----
-
-## 📁 Estructura
+## Estructura
 
 ```
 bitcoin-latam-analisis/
-├── bitcoin_latam.ipynb       # Análisis completo — exploración y visualizaciones
-├── src/
-│   └── cripto_metrics.py     # Módulo de métricas reutilizable (CLI)
-├── datos/                    # CSVs generados por el script
-├── img/                      # Gráficas exportadas
-├── requirements.txt
+├── bitcoin_latam.ipynb          # Notebook de análisis (sin outputs guardados)
+├── cripto_metrics.py            # Módulo y CLI de métricas (en la raíz, no en src/)
+├── .github/workflows/blank.yml  # Plantilla de GitHub (ver Pruebas y CI)
 └── README.md
 ```
 
----
+`datos/` e `img/` no existen en el repo: el script crea `datos/` al guardar su CSV (sin verificar: que el script cree el directorio si no existe).
 
-## ⚙️ Instalación
+## Instalación y uso
 
 ```bash
-git clone https://github.com/Serius69/bitcoin-latam-analisis
+git clone https://github.com/kapitalya/bitcoin-latam-analisis
 cd bitcoin-latam-analisis
 
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-mkdir -p datos img
-
-# Notebook interactivo
-jupyter lab bitcoin_latam.ipynb
+python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install numpy pandas scipy yfinance matplotlib seaborn jupyter   # sin requirements.txt: versiones sin fijar
+mkdir -p datos
 ```
 
-**Usar el módulo desde CLI:**
+Análisis por línea de comandos (desde la raíz del repo):
+
 ```bash
-# Análisis con tickers por defecto (BTC, ETH, GLD, ILF)
-python src/cripto_metrics.py
+# Tickers por defecto (BTC-USD, ETH-USD, GLD, ILF) desde 2020-01-01
+python cripto_metrics.py
 
-# Análisis personalizado
-python src/cripto_metrics.py --tickers BTC-USD ETH-USD SOL-USD --inicio 2022-01-01
+# Tickers y fecha de inicio personalizados
+python cripto_metrics.py --tickers BTC-USD ETH-USD SOL-USD --inicio 2022-01-01
 
-# Con otra tasa libre de riesgo
-python src/cripto_metrics.py --rfr 0.06
+# Otra tasa libre de riesgo (anual, decimal)
+python cripto_metrics.py --rfr 0.06
 ```
 
-**Usar como módulo Python:**
-```python
-from src.cripto_metrics import descargar_precios, metricas_resumen, calcular_drawdown
+Uso como módulo (desde la raíz del repo):
 
-precios  = descargar_precios(['BTC-USD', 'GLD'], inicio='2023-01-01')
-resumen  = metricas_resumen(precios)
+```python
+from cripto_metrics import descargar_precios, metricas_resumen, calcular_drawdown
+
+precios = descargar_precios(['BTC-USD', 'GLD'], inicio='2023-01-01')
+resumen = metricas_resumen(precios)
 print(resumen)
 ```
 
----
+El README anterior usaba `from src.cripto_metrics import ...`; esa ruta no existe en el repo.
 
-## 📈 Output del Script
+## Variables de entorno (solo nombres)
 
-```
-Ticker     Retorno Anual %  Volatilidad %  Sharpe  Sortino  Max Drawdown %
-BTC-USD          +156.3          73.2       2.10    3.05         -77.2
-ETH-USD          +143.8          78.5       1.81    2.67         -81.4
-GLD                +8.2          12.1       0.31    0.48         -18.3
-ILF               -12.1          22.4      -0.74   -1.02         -44.1
-```
+Ninguna. No hay `.env.example`. `yfinance` no requiere clave.
 
----
+## Pruebas y CI
 
-## ⚠️ Advertencia
+- No hay pruebas automatizadas.
+- `.github/workflows/blank.yml` es la plantilla por defecto de GitHub: se ejecuta en push y PR a `main`, pero solo hace `echo Hello, world!`. No valida el código.
 
-Este análisis es educativo. Bitcoin es uno de los activos más volátiles del mercado. Drawdowns del -70 al -80% son frecuentes. No constituye asesoramiento financiero.
+### Resultados
 
----
+- El bloque "Output del Script" del README anterior (por ejemplo, BTC +156.3% anual, Sharpe 2.10, drawdown máximo -77.2%) estaba escrito a mano, sin fecha de corte ni datos en el repo. Se retira. Resultados no verificables en el repo; para obtener cifras, ejecutar el CLI y citar la fecha de corte.
+- La sección del notebook "Comparación BTC vs inflación boliviana como cobertura" es solo un encabezado: no hay código en el repo que cargue BOB ni datos de inflación boliviana. No reproducible; se retira de este README hasta que exista ese análisis.
 
-## 🔗 Proyectos Relacionados
+## Despliegue
 
-- [💱 Dólar Paralelo Bolivia — ARIMA](https://github.com/Serius69/dolar-paralelo-bolivia-arima)
-- [📈 Portafolio de Activos BO](https://github.com/Serius69/portafolio-acciones-bolivia)
-- [🇧🇴 Inflación Bolivia — SARIMA](https://github.com/Serius69/inflacion-bolivia-series-tiempo)
+No aplica: el repo es de análisis local.
 
----
+## Estado y relaciones
 
-## 👤 Autor
+- Repositorio independiente. El README anterior enlazaba repos de una cuenta personal fuera de la organización (`Serius69/*`); no auditados en este corte.
 
-**Sergio** — Data Scientist en Finanzas | [github.com/Serius69](https://github.com/Serius69)
+## Precios y planes
+
+No aplica (repositorio de análisis, sin venta). Precios y planes: fuente única `Vault/EMPRESA/portafolio/PRECIOS-APROBADOS-20261108.md`.
+
+## Seguridad, privacidad y derechos
+
+- Sin secretos en el repo.
+- Fuente de precios: Yahoo Finance (vía `yfinance`), sujeta a sus términos de uso; no verificados en este corte.
+- Licencia: el repo no tiene archivo LICENSE; no hay derechos de reutilización declarados.
+
+## Convenciones de trabajo
+
+Cambios por rama `codex/*` y PR contra `main` (no hay rama `develop`). CI: el workflow de plantilla no valida nada; no se considera CI verde a efectos de revisión.
